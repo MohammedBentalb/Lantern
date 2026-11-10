@@ -1,6 +1,9 @@
 import numpy as np
 from IPython.display import display
 
+from brief_croise_1.encoding import encode_features, encode_target
+from brief_croise_1.visualization import plot_encoded_correlation_heatmap
+
 
 def detect_anomalies(df):
     print('--------------- detecting the anomalies ------------------')
@@ -72,3 +75,15 @@ def get_outliers_report_IQR(df, cols = None, with_mask = False):
     if with_mask:
         return result, global_mask
     return result
+
+
+def get_numerical_corr_with_target(df):
+    target = encode_target(df)
+    copy = encode_features(df)
+
+    crr = copy.corrwith(target).abs().sort_values(ascending=False)
+
+    related_columns = crr[crr > 0.3]
+    to_drop_columns = crr[crr < 0.3]
+    plot_encoded_correlation_heatmap(copy)
+    return copy, crr, related_columns, to_drop_columns
