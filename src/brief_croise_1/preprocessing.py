@@ -1,7 +1,11 @@
 from imblearn.over_sampling import SMOTE
 import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
-from brief_croise_1.config.conf import RANDOM_STATE
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
+from brief_croise_1.config.conf import NOMINAL_COLUMNS, NUMERIC_COLUMNS, ORDICAL_COLUMNS, RANDOM_STATE
 from brief_croise_1.transformers import IQROutliersRemover, ZscoreOutliersRemover, SocialMediaScreenFixer
 
 
@@ -31,3 +35,22 @@ def preprocess_data(x_train, y_train, x_test, remove_outliers=False, outliers_me
             x_train, y_train = smote.fit_resample(x_train, y_train)
 
     return x_train, y_train, x_test
+
+def get_preprocessing_pipeline():
+    numeric = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler()),
+    ])
+    ordinal = Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OrdinalEncoder(categories=[v  for c, v in ORDICAL_COLUMNS.items()])),
+    ])
+    nominal = Pipeline([
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('encoder', OneHotEncoder(drop='first', handle_unknown='ignore')),
+    ])
+    return ColumnTransformer([
+        ('numeric', numeric, NUMERIC_COLUMNS),
+        ('ordinal', ordinal, [c for c in ORDICAL_COLUMNS.keys()]),
+        ('nominal', nominal, NOMINAL_COLUMNS),
+    ])
