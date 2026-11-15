@@ -1,4 +1,5 @@
 from imblearn.over_sampling import SMOTE
+import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -8,6 +9,10 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 from brief_croise_1.config.conf import NOMINAL_COLUMNS, NUMERIC_COLUMNS, ORDICAL_COLUMNS, RANDOM_STATE
 from brief_croise_1.transformers import IQROutliersRemover, ZscoreOutliersRemover, SocialMediaScreenFixer
 
+
+def read_features(path):
+    x = pd.read_parquet(path)
+    return x.where(x.notna(), np.nan)
 
 def get_X_Y(df: pd.DataFrame):
     X = df.drop(columns=['Student_ID', 'Mental_Health_Risk'])
