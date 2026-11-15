@@ -36,7 +36,7 @@ class ZscoreOutliersRemover(BaseEstimator):
     def fit(self, x: pd.DataFrame, y: pd.Series = None):
         cols = list(x.select_dtypes(include='number').columns) if self.cols is None else list(self.cols)
 
-        self._cols = cols
+        self.cols = cols
         self._mean = x[cols].mean()
         self._std = x[cols].std()
         return self
@@ -45,14 +45,14 @@ class ZscoreOutliersRemover(BaseEstimator):
         if(not self.cols):
             raise Exception('fit must be called befor transforming')
         
-        zscore = (x[self._cols] - self._mean) / self._std
+        zscore = (x[self.cols] - self._mean) / self._std
         outliers = zscore.abs() > self.threshold
         retain = ~outliers.any(axis=1)
         return x[retain], y[retain]
     
     def fit_transform(self, x, y):
         self.fit(x, y)
-        return self.transform
+        return self.transform(x, y)
 
 class SocialMediaScreenFixer(BaseEstimator, TransformerMixin):
     def fit(self, x: pd.DataFrame, y: pd.Series = None):
@@ -63,6 +63,3 @@ class SocialMediaScreenFixer(BaseEstimator, TransformerMixin):
         flipped = x['Social_Media_Hours'] > x['Screen_Time_Hours']
         x.loc[flipped, ['Social_Media_Hours', 'Screen_Time_Hours']] = x.loc[flipped, ['Screen_Time_Hours', 'Social_Media_Hours']].values
         return x
-
-    def fit_transform(self, X):
-        return self.transform(X)
