@@ -3,12 +3,17 @@ from imblearn.pipeline import Pipeline
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_predict, cross_validate, train_test_split
-from brief_croise_1.config.conf import CROSS_VALIDATION, RANDOM_STATE, SCORING, TARGET_LABELS
+from brief_croise_1.config.conf import BARE_SUMMARY_PATH, CROSS_VALIDATION, RANDOM_STATE, SCORING, TARGET_LABELS
 from brief_croise_1.preprocessing import get_preprocessing_pipeline
 
 
 def build_pipeline(model, random_state=RANDOM_STATE):
     return Pipeline([('preprocessing', get_preprocessing_pipeline()), ('smote', SMOTE(random_state=random_state, k_neighbors=4)), ('model', model)])
+
+def fit_bare_model(x_train, y_train, model, random_state=RANDOM_STATE):
+    pipeline = build_pipeline(model, random_state)
+    pipeline.fit(x_train, y_train)
+    return pipeline
 
 def train_grid_search(x_train, y_train, model, param_grid, scoring=SCORING, refit='f1', cv=CROSS_VALIDATION, random_state=RANDOM_STATE):
     pipeline = build_pipeline(model, random_state)
@@ -22,14 +27,15 @@ def train_bare_model(x_train, y_train, model, random_state=RANDOM_STATE, test_si
     pipeline = build_pipeline(model, random_state)
     pipeline.fit(x_fit, y_fit)
     y_pred = pipeline.predict(x_val)
-    row = {
+    result = {
         'accuracy': accuracy_score(y_val, y_pred),
         'precision': precision_score(y_val, y_pred, average='macro'),
         'recall': recall_score(y_val, y_pred, average='macro'),
         'f1': f1_score(y_val, y_pred, average='macro'),
         'cm': confusion_matrix(y_val, y_pred, labels=TARGET_LABELS),
+        "pipe": pipeline,
     }
-    return {**row, "pipe" : pipeline}
+    return result
 
 def train_cross_val_bare_model(x_train, y_train, model, scoring=SCORING, cv=CROSS_VALIDATION, random_state=RANDOM_STATE):
     pipeline = build_pipeline(model, random_state)
@@ -39,6 +45,9 @@ def train_cross_val_bare_model(x_train, y_train, model, scoring=SCORING, cv=CROS
     row = {metric: scores[f'test_{metric}'].mean() for metric in scoring}
     row['cm'] = confusion_matrix(y_train, y_pred, labels=TARGET_LABELS)
     return row, scores
+
+def get_best_bare_name(summary_path=BARE_SUMMARY_PATH):
+    return pd.read_csv(summary_path, index_col=0)['f1'].astype(float).idxmax()
 
 def summarize_grids(grids: dict):
     rows = {}

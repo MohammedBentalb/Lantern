@@ -43,9 +43,10 @@ X_TEST_PATH = PROCESSED_DIR / 'x_test.parquet'
 Y_TRAIN_PATH = PROCESSED_DIR / 'y_train.parquet'
 Y_TEST_PATH = PROCESSED_DIR / 'y_test.parquet'
 
-CV_SUMMARY_PATH = ARTIFACTS_DIR / 'cv_summary.csv'
-TEST_REPORT_PATH = ARTIFACTS_DIR / 'test_report.csv'
+METRICS_DIR = ARTIFACTS_DIR / 'metrics'
+BARE_SUMMARY_PATH = METRICS_DIR / 'bare_cv_summary.csv'
+GS_SUMMARY_PATH = METRICS_DIR / 'gs_summary.csv'
+TEST_REPORT_PATH = METRICS_DIR / 'test_report.csv'
 
 DAG_ID = 'mental_health_pipeline'
 DAG_START_DATE = datetime(2026, 1, 1)
-DAG_TAGS = ['mental-health']
