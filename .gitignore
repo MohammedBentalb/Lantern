@@ -10,3 +10,8 @@ wheels/
 .venv
 /data
 /strategy
+/artifacts
+docker/docker.env
+docker/logs/
+/models/*.joblib
+/models/champion/
